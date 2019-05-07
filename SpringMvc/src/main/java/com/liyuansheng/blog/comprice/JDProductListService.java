@@ -10,6 +10,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -86,7 +87,7 @@ public class JDProductListService implements ProductListService {
                         productInfo.setProductid(pid);
                         String reviewNum = String.valueOf(numFuture.get());
                         productInfo.setReviewNum(reviewNum);
-                        String trade = (int) (Integer.valueOf(reviewNum) / 0.3) + "到" + (int)(Integer.valueOf(reviewNum) / 0.2);
+                        String trade = String.valueOf((Integer.valueOf(reviewNum) / 0.25));
                         productInfo.setTradeNum(trade);
                         productInfo.setShopName(shopName);
                         productInfo.setEcName("JD");
@@ -222,5 +223,50 @@ public class JDProductListService implements ProductListService {
         return baseRspBean;
     }
 
+    /**
+     * 商品信息
+     *
+     * @param productInfos
+     * @return
+     */
+    public List<ShopInfo> caculateShopInfos(List<ProductInfo> productInfos) {
+        List<ShopInfo> shopInfos = new ArrayList<>();
+        productInfos.forEach(productInfo -> {
+            if (ifExistInShopInfos(productInfo, shopInfos)) {
+                //存在情况
+                shopInfos.forEach(shopInfo -> {
+                    shopInfo.setReviewNum(Integer.valueOf(shopInfo.getReviewNum()) + Integer.valueOf(productInfo.getReviewNum()));
+                    shopInfo.setTradeNum(Float.valueOf(shopInfo.getTradeNum()) + Float.valueOf(productInfo.getTradeNum()));
+                });
+            } else {
+                ShopInfo shopInfo = new ShopInfo();
+                BeanUtils.copyProperties(productInfo, shopInfo);
+                shopInfo.setTradeNum(Float.valueOf(productInfo.getTradeNum()));
+                shopInfo.setReviewNum(Integer.valueOf(productInfo.getReviewNum()));
+                shopInfos.add(shopInfo);
+            }
+        });
+        return shopInfos;
+    }
 
+    /**
+     * 判断是否在shopInfos
+     *
+     * @param productInfo
+     * @param shopInfos
+     * @return
+     */
+    boolean ifExistInShopInfos(ProductInfo productInfo, List<ShopInfo> shopInfos) {
+        for (ShopInfo shopInfo : shopInfos) {
+            if (shopInfo.getShopName().equals(productInfo.getShopName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static void main(String[] args) {
+        String num = "377548.0";
+        System.out.println(Float.valueOf(num));
+    }
 }

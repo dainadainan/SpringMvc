@@ -35,13 +35,13 @@ public class TMProductListService implements ProductListService {
         // 模拟浏览器浏览（user-agent的值可以通过浏览器浏览，查看发出请求的头文件获取）
         httpGet.setHeader("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36");
         CloseableHttpResponse response = null;
-        System.out.println("天猫爬虫开始时间："+ System.currentTimeMillis());
+        System.out.println("天猫爬虫开始时间：" + System.currentTimeMillis());
         try {
             response = httpclient.execute(httpGet);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println("天猫爬虫结束时间："+ System.currentTimeMillis());
+        System.out.println("天猫爬虫结束时间：" + System.currentTimeMillis());
         // 获取响应状态码
         int statusCode = response.getStatusLine().getStatusCode();
         try {
@@ -77,16 +77,16 @@ public class TMProductListService implements ProductListService {
                     // 商品图片网址
                     String imgUrl = item.select("div[class='productImg-wrap']").select("a").select("img").attr("data-ks-lazyload");
                     //销量
-                    String  tradeNum = item.select("p[class='productStatus']").select("span").text();
+                    String tradeNum = item.select("p[class='productStatus']").select("span").text();
                     ProductInfo productInfo = new ProductInfo();
                     productInfo.setShopName(shopName);
                     productInfo.setProductid(id);
                     productInfo.setProductName(name);
                     productInfo.setProductPrice(price);
                     String[] trade = tradeNum.split("笔");
-                    if(trade != null && trade.length == 2){
-                        productInfo.setTradeNum(trade[0]);
-                        productInfo.setReviewNum(trade[1]);
+                    if (trade != null && trade.length == 2) {
+                        productInfo.setTradeNum(String.valueOf(getTradeNum(trade[0])));
+                        productInfo.setReviewNum(String.valueOf(getReviewNumber(trade[1])));
                     }
 
                     productInfo.setEcName("TM");
@@ -113,19 +113,39 @@ public class TMProductListService implements ProductListService {
                 e.printStackTrace();
             }
         }
-        System.out.println("天猫结束时间1："+ System.currentTimeMillis());
+        System.out.println("天猫结束时间1：" + System.currentTimeMillis());
         return tmProductInfos;
     }
 
-    public static void main(String[] args) {
-        String url = "https://list.tmall.com/search_product.htm?q=";
-        new TMProductListService().getProductList(url,"苹果电脑");
-        try {
-
-            Document document = Jsoup.connect("https://list.tmall.com/search_product.htm?q=").timeout(5000).get();
-        } catch (IOException e) {
-            e.printStackTrace();
+    /**
+     * 获取评论
+     *
+     * @param reviewNum
+     * @return
+     */
+    private Integer getReviewNumber(String reviewNum) {
+        reviewNum = reviewNum.replace("评价 ", "");
+        if (reviewNum.contains("万")) {
+            reviewNum = reviewNum.replace("万", "");
+            return (int) (Float.valueOf(reviewNum) * 10000);
         }
+        reviewNum = reviewNum.replace(" ", "");
+        return Integer.valueOf(reviewNum);
+    }
+
+    private Integer getTradeNum(String tradeNum) {
+        tradeNum = tradeNum.replace("月成交 ", "");
+        if (tradeNum.contains("万")) {
+            tradeNum = tradeNum.replace("万", "");
+            return (int) (Float.valueOf(tradeNum) * 10000);
+        }
+        tradeNum = tradeNum.replace(" ", "");
+        return Integer.valueOf(tradeNum);
+    }
+
+
+    public static void main(String[] args) {
+
     }
 
 }

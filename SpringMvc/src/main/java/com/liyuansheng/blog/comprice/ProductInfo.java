@@ -27,11 +27,11 @@ public class ProductInfo implements Serializable {
     /**
      * 月销售笔数
      */
-    private String tradeNum;
+    private String tradeNum = "0";
     /**
      * 评论数
      */
-    private String reviewNum;
+    private String reviewNum = "0";
     /**
      * 商品URL
      */

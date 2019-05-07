@@ -35,12 +35,33 @@
                         <a href="${pageContext.request.contextPath}/admin/user/add">
                             <button type="button" class="btn btn-info">添加</button>
                         </a>
-                        <a href="${pageContext.request.contextPath}/admin/user/restoreData"><button type="button" class="btn btn-warning">数据还原</button></a>
+                        <a href="${pageContext.request.contextPath}/admin/user/restoreData">
+                            <button type="button" class="btn btn-warning">数据还原</button>
+                        </a>
                         <button type="button" class="btn btn-danger" onclick="deleteUserMore()">批量删除</button>
                     </form>
                     <br>
                     <c:choose>
-                        <c:when test="${userDTOPage.numberOfElements > 0}">
+                        <c:when test="${fn:length(products) > 0}">
+                            <a>整体信息</a>
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th>网站</th>
+                                    <th>商户名</th>
+                                    <th>评论数</th>
+                                    <th>销量</th>
+                                </tr>
+                                <c:forEach var="shopInfo" items="${shopInfos}">
+                                    <tr>
+                                        <td>${shopInfo.ecName}</td>
+                                        <td>${shopInfo.shopName}</td>
+                                        <td>${shopInfo.reviewNum}</td>
+                                        <td>${shopInfo.tradeNum}</td>
+                                    </tr>
+                                </c:forEach>
+                            </table>
+                            <a>详细信息</a>
+
                             <table class="table table-bordered">
                                 <tr>
                                     <th><input type="checkbox" id="allSelect" onclick="DoCheck()"></th>
@@ -54,7 +75,7 @@
                                 </tr>
                                 <c:forEach var="product" items="${products}">
                                     <tr>
-                                        <td><input type="checkbox" name="ids" value="${user.id}"></td>
+                                        <td><input type="checkbox" name="ids" value="${product.productid}"></td>
                                         <td>${product.productid}</td>
                                         <td>${product.ecName}</td>
                                         <td>${product.productName}</td>
@@ -65,100 +86,6 @@
                                     </tr>
                                 </c:forEach>
                             </table>
-
-                            <%--总共页数：${userDTOPage.totalPages} <br>--%>
-                            <%--记录总数：${userDTOPage.totalElements} <br>--%>
-                            <%--当前页号：${userDTOPage.number} <br>--%>
-                            <%--是否为首页：${userDTOPage.first} <br>--%>
-                            <%--是否为尾页：${userDTOPage.last} <br>--%>
-                            <%--每页显示的数量：${userDTOPage.numberOfElements} <br>--%>
-                            <%--分页 start--%>
-                            <nav aria-label="Page navigation">
-                                <ul class="pagination">
-                                    <c:choose>
-                                        <c:when test="${userDTOPage.totalPages <= 3 }">
-                                            <c:set var="begin" value="1"/>
-                                            <c:set var="end" value="${userDTOPage.totalPages }"/>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <c:set var="begin" value="${userDTOPage.number+1-1 }"/>
-                                            <c:set var="end" value="${userDTOPage.number+1 + 2}"/>
-                                            <c:if test="${begin < 2 }">
-                                                <c:set var="begin" value="1"/>
-                                                <c:set var="end" value="3"/>
-                                            </c:if>
-                                            <c:if test="${end > userDTOPage.totalPages}">
-                                                <c:set var="begin" value="${userDTOPage.totalPages-2 }"/>
-                                                <c:set var="end" value="${userDTOPage.totalPages}"/>
-                                            </c:if>
-                                        </c:otherwise>
-                                    </c:choose>
-
-                                        <%--如果当前为首页，隐藏上一页--%>
-                                    <c:choose>
-                                        <c:when test="${userDTOPage.first}">
-                                            <%--当前页为第一页，隐藏上一页按钮--%>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <li>
-                                                <a href="?page=${userDTOPage.number}" aria-label="Previous">
-                                                    <span aria-hidden="true">&laquo;</span>
-                                                </a>
-                                            </li>
-                                        </c:otherwise>
-                                    </c:choose>
-
-                                        <%--显示第一页的页码--%>
-                                    <c:if test="${begin >= 2 }">
-                                        <li><a href="?page=1">1</a></li>
-                                    </c:if>
-
-                                        <%--显示点点点--%>
-                                    <c:if test="${begin  > 2 }">
-                                        <li class="disabled"><a>…</a></li>
-                                    </c:if>
-
-                                        <%--打印 页码--%>
-                                    <c:forEach begin="${begin }" end="${end }" var="i">
-                                        <c:choose>
-                                            <c:when test="${i eq userDTOPage.number+1}">
-                                                <li class="active"><a href="?page=${i}">${i}<span
-                                                        class="sr-only">(current)</span></a></li>
-                                            </c:when>
-                                            <c:otherwise>
-                                                <li><a href="?page=${i}">${i}</a></li>
-                                            </c:otherwise>
-                                        </c:choose>
-                                    </c:forEach>
-
-                                        <%-- 显示点点点 --%>
-                                    <c:if test="${end < userDTOPage.totalPages-1 }">
-                                        <li class="disabled"><a>…</a></li>
-                                    </c:if>
-
-                                        <%-- 显示最后一页的数字 --%>
-                                    <c:if test="${end < userDTOPage.totalPages}">
-                                        <li>
-                                            <a href="?page=${userDTOPage.totalPages}">${userDTOPage.totalPages}</a>
-                                        </li>
-                                    </c:if>
-
-                                        <%--如果当前页为尾页，隐藏下一页--%>
-                                    <c:choose>
-                                        <c:when test="${userDTOPage.number+1 eq userDTOPage.totalPages}">
-                                            <%--到了尾页隐藏，下一页按钮--%>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <li>
-                                                <a href="?page=${userDTOPage.number+2}" aria-label="Next">
-                                                    <span aria-hidden="true">&raquo;</span>
-                                                </a>
-                                            </li>
-                                        </c:otherwise>
-                                    </c:choose>
-                                </ul>
-                            </nav>
-                            <%--分页 end--%>
                         </c:when>
                         <c:otherwise><%--如果没有文章--%>
                             <div class="alert alert-danger">
@@ -177,7 +104,7 @@
                         <strong>温馨提示&nbsp;</strong> <br>
                         1、如果数据被删除了，可以点击上方的"<strong>数据还原</strong>"按钮，后台会在数据库中重新添加29条记录 <br>
                         2、查询功能：根据用户名、昵称、邮箱、电话、个人主页模糊查询 <br>
-                        3、当前user表中有${userDTOPage.totalElements}条记录,共${userDTOPage.totalPages}页 <br>
+                        3、当前user表中有条记录,共页 <br>
                         4、可以通过page和size参数来跳转指定页码和设置每页显示数量，如list?page=2&size=10 <br>
                     </div>
                 </div>

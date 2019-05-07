@@ -31,59 +31,34 @@ public class PriceCheckMain {
 
 
 
-    private static PriceCheckUtil pcu = PriceCheckUtil.getInstance();
-
-    public List<ProductInfo> getProductList(String productName) {
-
-        String jdUrl = Constants.JDURL + productName + Constants.JDENC;
-
-        String tmUrl = Constants.TMURL + productName;
-
-        return getProducts(jdUrl, tmUrl, productName);
-    }
-
-    public List<Map<String, ProductInfo>> getProductFromUrls(String jdUrl, String tbUrl, String productName) {
-        List<Map<String, ProductInfo>> retListMap = new ArrayList<Map<String,ProductInfo>>();
-        List<ProductInfo> jdProductList = jdProductListService.getProductList(jdUrl, productName);
-        List<ProductInfo> tmProductList = tmProductListService.getProductList(tbUrl, productName);
-        for(int i = 0; i < jdProductList.size(); i++){
-            String jdProductName = jdProductList.get(i).getProductName();
-            Map<String, ProductInfo> map = new HashMap<String, ProductInfo>();
-            map.put("JD", jdProductList.get(i));
-            ProductInfo tbProduct = pcu.getSimilarity(jdProductName, tmProductList);
-            map.put("TM", tbProduct);
-            retListMap.add(map);
-        }
-
-        return retListMap;
-    }
-    public List< ProductInfo> getProducts(String jdUrl, String tmUrl, String productName) {
+    /**
+     * 获取商品数据
+     * @param productName
+     * @param plateform
+     * @return
+     */
+    public List< ProductInfo> getProducts( String productName,String plateform) {
         ExecutorService executorService = CommonThreadExcutorUtils.getDefaultExecutorService();
-        List<ProductInfo> retList = new ArrayList<ProductInfo>();
-        System.out.println("京东开始时间1："+ System.currentTimeMillis());
-        Future jdFuture = executorService.submit(new ProductThread(jdProductListService,jdUrl,productName));
-        Future tmFuture = executorService.submit(new ProductThread(tmProductListService,tmUrl,productName));
-        List<ProductInfo> jdProductList = new ArrayList<>();
+        Future future = null;
+        if(plateform == "JD"){
+            String url = Constants.JDURL + productName + Constants.JDENC;
+            future = executorService.submit(new ProductThread(jdProductListService,url,productName));
+        }
+        if(plateform == "TM"){
+            String url = Constants.TMURL + productName;
+            future = executorService.submit(new ProductThread(tmProductListService,url,productName));
+        }
+        List<ProductInfo> productList = new ArrayList<>();
         try {
-            jdProductList = (List<ProductInfo>) jdFuture.get();
+            productList = (List<ProductInfo>) future.get();
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
             e.printStackTrace();
         }
-        List<ProductInfo> tmProductList = new ArrayList<>();
-        try {
-            tmProductList = (List<ProductInfo>) tmFuture.get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-        retList.addAll(jdProductList);
-        retList.addAll(tmProductList);
-
-        return retList;
+        return productList;
     }
+
 
     /**
      *  爬取输入商户信息线程

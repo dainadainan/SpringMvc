@@ -29,21 +29,18 @@ public class TBProductListService implements ProductListService {
         int page = 0;
         for(int i = 0; i < 10; i++){
             try {
-                System.out.println("TB Product 第[" + (i + 1) + "]页");
                 if(i == 0){
                     url = tbUrl;
                 }else{
                     page += 44;
                     url = Constants.TBURL + pcu.getUrlCode(productName) + Constants.TBPAGE + page;
                 }
-                System.out.println(url);
                 Document doc = Jsoup.parse(pcu.getXmlByHtmlunit(url));
                 Elements itemlist = doc.select("div[class=m-itemlist]");
                 Iterator<Element> it = itemlist.iterator();
                 while(it.hasNext()){
                     Element item = it.next();
                     Elements items = item.select("div[data-category=auctions]");
-                    System.out.println(items.size());
                     Iterator<Element> one = items.iterator();
                     while(one.hasNext()){
                         Element e = one.next();
@@ -68,17 +65,6 @@ public class TBProductListService implements ProductListService {
         return tbProductList;
     }
 
-    public static void main(String[] args) {
-        try{
-            String productName = "铅笔";
-            String tbUrl = Constants.TBURL + pcu.getUrlCode(productName);
-            List<ProductInfo> list = new TBProductListService().getProductList(tbUrl, productName);
-            for(ProductInfo pi : list){
-                System.out.println("[" + pi.getProductName() + "]  [" + pi.getProductPrice() + "]");
-            }
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-    }
+
 
 }
